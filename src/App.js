@@ -1,24 +1,250 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
+import 'xterm/css/xterm.css';
 
 function App() {
+  const terminalRef = useRef(null);
+  const [currPath, setCurrPath] = useState([]);
+
+  const [fileSys, setFileSys] = useState({
+    type: 'directory',
+    contents: {
+      about_me: {
+        type: 'directory',
+        contents: {
+          links: {
+            type: 'file',
+            content: '\x1b]8;;https://www.linkedin.com/in/shreyaas14/\x1b\\Linkedin\x1b]8;;\x1b\\, \x1b]8;;https://nyubnf.com/\x1b\\BNF Website\x1b]8;;\x1b\\',
+          },
+          interests: {
+            type: 'file',
+            content: 'Machine Learning, Distributed Systems, Blockchain',
+          }, 
+          currently_reading: {
+            type: 'file',
+            content: 'Designing Data-Intensive Applications - Martin Kleppmann, Operating Systems: Three Easy Pieces - Andrea Arpaci-Dusseau and Remzi Arpaci-Dusseau',
+          },
+        },
+      },
+      projects: {
+        type: 'file',
+        content: 'Find my projects on my \x1b]8;;https://github.com/Shreyaas14\x1b\\GitHub\x1b]8;;\x1b\\',
+      },
+      blog: {
+        type: 'directory',
+        contents: {},
+      },
+    },
+  });
+  
+
+  const getCurrDir = useCallback(() => {
+    let dir = fileSys;
+  
+    for (const part of currPath) {
+      if (dir.contents && dir.contents[part]) {
+        dir = dir.contents[part];
+      } else {
+        return null;
+      }
+    }
+
+    return dir;
+  }, [currPath, fileSys]);
+  
+  
+  useEffect(() => {
+    fetch('/api/posts')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error: status: {response.status}`)
+        }
+        return response.json();
+      })
+      .then(data => {
+        const posts = data.posts;
+        const updatedBlogContents = {};
+        posts.forEach((post, index) => {
+          updatedBlogContents[`post${index + 1}`] = {
+            type: 'file',
+            content: post.content,
+          };
+        });
+  
+        setFileSys(prevFileSys => {
+          const updatedFileSys = {
+            ...prevFileSys,
+            contents: {
+              ...prevFileSys.contents,
+              blog: {
+                ...prevFileSys.contents.blog,
+                contents: updatedBlogContents,
+              },
+            },
+          };
+          return updatedFileSys;
+        });
+      })
+      .catch(error => console.error('Error fetching blog posts:', error));
+  }, []);  
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      const terminal = new Terminal({
+        cursorBlink: true,
+        theme: {
+          background: '#1e1e1e',
+          foreground: '#ffffff',
+        },
+        fontFamily: 'monospace',
+        fontSize: 18,
+        fontWeight: 'normal',
+        fontWeightBold: 'bold',
+      });
+
+      const fitAddon = new FitAddon();
+      terminal.loadAddon(fitAddon);
+      terminal.open(terminalRef.current);
+
+      // Welcome message
+      fitAddon.fit();
+      terminal.writeln("\x1b[1;34mShreyaas' Website\x1b[0m");
+      terminal.writeln("Type 'help' to see available commands.");
+
+      terminal.prompt = () => {
+        let path = '/' + currPath.join('/');
+        terminal.write(`\r\n${path}$ `);
+      };
+      terminal.prompt();
+
+      let command = '';
+      terminal.onKey(({ key, domEvent }) => {
+        const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
+        if (domEvent.keyCode === 13) {
+          handleCommand(command);
+          command = '';
+          terminal.prompt();
+        } else if (domEvent.keyCode === 8) {
+          if (command.length > 0) {
+            command = command.slice(0, -1);
+            terminal.write('\b \b');
+          }
+        } else if (printable) {
+          command += key;
+          terminal.write(key);
+        }
+      });
+
+      const handleCommand = (cmd) => {
+        const args = cmd.trim().split(' ');
+        const command = args[0];
+        args.shift();
+
+        switch (command) {
+          case 'help':
+            terminal.writeln([
+              '',
+              'cd - enter a directory',
+              "ls - display a directory's current options",
+              'clear - clear the terminal',
+              'cat - read a file',
+            ].join('\r\n'));
+            break;
+          case 'cd':
+            cdCommand(args);
+            break;
+          case 'ls':
+            lsCommand();
+            break;
+          case 'cat':
+            catCommand(args);
+            break;
+          case 'clear':
+            terminal.clear();
+            break;
+          default:
+            terminal.writeln(`\r\nCommand not found: ${cmd}`);
+        }
+      };
+
+      //ls cmd
+      const lsCommand = () => {
+        const currDir = getCurrDir();
+      
+        if (currDir && currDir.contents && typeof currDir.contents === 'object') {
+          const entries = Object.keys(currDir.contents);
+          terminal.writeln('\r\n' + entries.join('\r\n'));
+        } else {
+          terminal.writeln('\r\nCannot list contents: invalid directory.');
+        }
+      };
+      
+      //cat cmd
+      const catCommand = (args) => {
+        if (args.length === 0) {
+          terminal.writeln("\r\nNo file selected.");
+          return;
+        }
+
+        const fileName = args[0];
+        const currDir = getCurrDir();
+
+        if (currDir && currDir.contents && currDir.contents[fileName]) {
+          const file = currDir.contents[fileName];
+          if (file.type === 'file') {
+            terminal.writeln(`\r\n${file.content}`);
+          } else {
+            terminal.writeln(`\r\n${fileName} is not a file.`);
+          }
+        } else {
+          terminal.writeln(`\r\nFile not found: ${fileName}`);
+        }
+      };
+
+      //cd cmd
+      const cdCommand = (args) => {
+        if (args.length === 0) {
+          terminal.writeln("\r\nNo directory given.");
+          return;
+        }
+      
+        const dirName = args[0];
+      
+        if (dirName === '..') {
+          if (currPath.length > 0) {
+            setCurrPath(prev => prev.slice(0, -1));
+          } else {
+            terminal.writeln("\r\nAlready at root directory!");
+          }
+          return;
+        }
+      
+        const currDir = getCurrDir();
+      
+        if (currDir && currDir.contents) {
+          if (currDir.contents[dirName] && currDir.contents[dirName].type === 'directory') {
+            setCurrPath(prev => [...prev, dirName]);
+          } else {
+            terminal.writeln(`\r\nDirectory not found or not a directory: ${dirName}`);
+          }
+        } else {
+          terminal.writeln(`\r\nInvalid directory: ${dirName}`);
+        }
+      };
+            
+      const handleResize = () => fitAddon.fit();
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        terminal.dispose();
+        window.removeEventListener('resize', fitAddon.fit);
+      };
+    }
+  }, [getCurrDir, currPath]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <div ref={terminalRef} style={{ width: '100%', height: '100vh' }}></div>
   );
 }
 

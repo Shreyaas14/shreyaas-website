@@ -111,6 +111,7 @@ function App() {
       fitAddon.fit();
       terminal.writeln("\x1b[1;34mShreyaas' Website\x1b[0m");
       terminal.writeln("Type 'help' to see available commands.");
+      terminal.writeln("NOTE: To make this emulate a real terminal, I did not distinguish if something is a file or a directory. So experiment and see what works!")
 
       terminal.prompt = () => {
         let path = '/' + currPath.join('/');

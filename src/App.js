@@ -10,28 +10,28 @@ function App() {
   const [fileSys, setFileSys] = useState({
     type: 'directory',
     contents: {
-      about_me: {
+      "about_me": {
         type: 'directory',
         contents: {
-          links: {
+          "links.txt": {
             type: 'file',
             content: '\x1b]8;;https://www.linkedin.com/in/shreyaas14/\x1b\\Linkedin\x1b]8;;\x1b\\, \x1b]8;;https://nyubnf.com/\x1b\\BNF Website\x1b]8;;\x1b\\',
           },
-          interests: {
+          "interests.txt": {
             type: 'file',
             content: 'Machine Learning, Distributed Systems, Blockchain',
           }, 
-          currently_reading: {
+          "currently_reading.txt": {
             type: 'file',
-            content: 'Designing Data-Intensive Applications - Martin Kleppmann, Operating Systems: Three Easy Pieces - Andrea Arpaci-Dusseau and Remzi Arpaci-Dusseau',
+            content: 'Designing Data-Intensive Applications - Martin Kleppmann\r\nOperating Systems: Three Easy Pieces - Andrea Arpaci-Dusseau and Remzi Arpaci-Dusseau',
           },
         },
       },
-      projects: {
+      "projects.txt": {
         type: 'file',
         content: 'Find my projects on my \x1b]8;;https://github.com/Shreyaas14\x1b\\GitHub\x1b]8;;\x1b\\',
       },
-      blog: {
+      "blog": {
         type: 'directory',
         contents: {},
       },
@@ -109,7 +109,7 @@ function App() {
 
       // Welcome message
       fitAddon.fit();
-      terminal.writeln("\x1b[1;34mShreyaas' Website\x1b[0m");
+      terminal.writeln("\x1b[1;35mShreyaas' Website\x1b[0m");
       terminal.writeln("Type 'help' to see available commands.");
       terminal.writeln("NOTE: I did not distinguish if something is a file or a directory. So experiment and see what works!")
 

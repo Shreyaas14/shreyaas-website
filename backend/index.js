@@ -11,23 +11,25 @@ const db = new sqlite3.Database(dbPath);
 
 app.use(bodyParser.json());
 
-app.use(express.static(path.join(__dirname, 'build')));
-
-//secure post endpoints
+//post req
 app.post('/api/posts', basicAuth({
   users: { 'admin': process.env.ADMIN_PASSWORD },
   challenge: true,
 }), (req, res) => {
   const { title, content } = req.body;
-  db.run('INSERT INTO posts (title, content, created_at) VALUES (?, ?, ?)', [title, content, new Date()], function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+  db.run(
+    'INSERT INTO posts (title, content, created_at) VALUES (?, ?, ?)',
+    [title, content, new Date()],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ id: this.lastID });
     }
-    res.json({ id: this.lastID });
-  });
+  );
 });
 
-//get
+//get req
 app.get('/api/posts', (req, res) => {
   db.all('SELECT * FROM posts ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
@@ -37,12 +39,15 @@ app.get('/api/posts', (req, res) => {
   });
 });
 
-//server frontend
+//static files
+app.use(express.static(path.join(__dirname, 'build')));
+
+//catch-all
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-//start server
+//start
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

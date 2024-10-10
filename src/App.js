@@ -31,7 +31,7 @@ function App() {
           "experiences.txt": {
             type: 'file',
             content: ['', 
-              "\x1b[1;34mInstitutional - Reporting & Monetization @ Coinbase: Backend Software Engineering Intern\x1b[0m",
+              "\x1b[1;36mInstitutional - Reporting & Monetization @ Coinbase: Backend Software Engineering Intern\x1b[0m",
                "\x1b[1;32mTest Engineering Division @ Georgia Tech Research Institute: Software Engineering Intern\x1b[0m",
                "\x1b[1;37mCommvault: Software Engineering Intern\x1b[0m",
                "\x1b[1;37mAirGap @ Arrosoft Solutions: Software Engineering Intern\x1b[0m",

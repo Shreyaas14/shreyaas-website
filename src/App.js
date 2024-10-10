@@ -23,18 +23,40 @@ function App() {
           }, 
           "currently_reading.txt": {
             type: 'file',
-            content: 'Designing Data-Intensive Applications - Martin Kleppmann\r\nOperating Systems: Three Easy Pieces - Andrea Arpaci-Dusseau and Remzi Arpaci-Dusseau',
+            content: ['',
+              'Designing Data-Intensive Applications - Martin Kleppmann',
+              'Operating Systems: Three Easy Pieces - Andrea Arpaci-Dusseau and Remzi Arpaci-Dusseau']
+              .join('\r\n'),
+          },
+          "experiences.txt": {
+            type: 'file',
+            content: ['', 
+              "\x1b[1;34mInstitutional - Reporting & Monetization @ Coinbase: Backend Software Engineering Intern\x1b[0m",
+               "\x1b[1;32mTest Engineering Division @ Georgia Tech Research Institute: Software Engineering Intern\x1b[0m\r\n",
+               "\x1b[1;37mCommvault: Software Engineering Intern\x1b[0m\r\n",
+               "\x1b[1;37mAirGap @ Arrosoft Solutions: Software Engineering Intern\x1b[0m\r\n",
+              ].join("\r\n"),
+          },
+          "ec.txt": {
+            type: 'file',
+            content: ['', 
+              "\x1b[1;34mML Research Intern @ NYU Stern Operations Management\x1b[0m",
+               "\x1b[1;34mHead of Development, prev Marketing Director, Development Team Member @ NYU Blockchain & Fintech Club\x1b[0m\r\n",
+               "\x1b[1;32mprev Insight Team Project Manager, Advanced Team Member, Insight Team Member @ NYU Stern Business & Analytics Club\x1b[0m\r\n",
+               "\x1b[1;37mprev Head of Engineering @ NYU Math Finance Group\x1b[0m\r\n",
+              ].join("\r\n"),
           },
         },
       },
       "projects.txt": {
         type: 'file',
-        content: 'Find my projects on my \x1b]8;;https://github.com/Shreyaas14\x1b\\GitHub\x1b]8;;\x1b\\',
+        content: 'Find my projects on my \x1b]8;;https://github.com/Shreyaas14\x1b\\GitHub\x1b]8;;\x1b\\!',
       },
+      /*
       "blog": {
         type: 'directory',
         contents: {},
-      },
+      },*/
     },
   });
   
